@@ -79,15 +79,14 @@ func (m *Cogs) RegisteredMongo() error {
 		return err
 	}
 
-	var ctx context.Context
 	// connect mongodb
-	ctx, facade.Cancel = context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	if err = facade.MGOClient.Connect(ctx); err != nil {
 		return err
 	}
+	defer cancel()
 
 	// using database
-	facade.Db = make(map[string]*mongo.Database)
 	facade.Db[m.SystemDatabase] = facade.MGOClient.Database(m.SystemDatabase)
 	return nil
 }
