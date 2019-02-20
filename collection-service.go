@@ -38,13 +38,13 @@ func main() {
 		config.SystemDatabase,
 		config.SystemExchange,
 		config.SystemQueue,
-	).Subscribe()
+	).Run()
 
 	// collection information
 	collection.NewStatistics(
 		config.StatisticsExchange,
 		config.StatisticsQueue,
-	).Subscribe()
+	).Run()
 
 	facade.WG.Wait()
 }

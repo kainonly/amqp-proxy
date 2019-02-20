@@ -1,19 +1,25 @@
 package collection
 
-import "github.com/kainonly/collection-service/src/facade"
+import (
+	"github.com/kainonly/collection-service/src/facade"
+	"github.com/streadway/amqp"
+)
 
-type Common struct {
-	Exchange string
-	Queue    string
+type common struct {
+	exchange string
+	queue    string
+	delivery <-chan amqp.Delivery
 }
 
-func (m *Common) _DeclareMQ() error {
+var err error
+
+func (m *common) defined() error {
 	// declare exchange
-	if err := facade.AMQPChannel.ExchangeDeclare(
-		m.Exchange,
+	if err = facade.AMQPChannel.ExchangeDeclare(
+		m.exchange,
 		"direct",
-		false,
 		true,
+		false,
 		false,
 		false,
 		nil,
@@ -22,10 +28,10 @@ func (m *Common) _DeclareMQ() error {
 	}
 
 	// declare queue
-	if _, err := facade.AMQPChannel.QueueDeclare(
-		m.Queue,
-		false,
+	if _, err = facade.AMQPChannel.QueueDeclare(
+		m.queue,
 		true,
+		false,
 		false,
 		false,
 		nil,
@@ -34,10 +40,10 @@ func (m *Common) _DeclareMQ() error {
 	}
 
 	// bind queue
-	if err := facade.AMQPChannel.QueueBind(
-		m.Queue,
+	if err = facade.AMQPChannel.QueueBind(
+		m.queue,
 		"",
-		m.Exchange,
+		m.exchange,
 		false,
 		nil,
 	); err != nil {
@@ -45,4 +51,10 @@ func (m *Common) _DeclareMQ() error {
 	}
 
 	return nil
+}
+
+func (m *common) ack(msg *amqp.Delivery) {
+	if err = msg.Ack(false); err != nil {
+		panic(err.Error())
+	}
 }

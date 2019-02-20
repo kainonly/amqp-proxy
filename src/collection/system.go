@@ -4,43 +4,39 @@ import (
 	"context"
 	"github.com/kainonly/collection-service/src/facade"
 	"github.com/mongodb/mongo-go-driver/bson"
-	"github.com/streadway/amqp"
 	"time"
 )
 
 type (
-	System struct {
-		Database string
-		Common
+	system struct {
+		database string
+		common
 	}
 
-	Logs struct {
+	logs struct {
 		Publish string
 		Data    map[string]interface{}
 		Time    int64
 	}
 )
 
-func NewSystem(database string, exchange string, queue string) *System {
-	system := &System{}
-	system.Database = database
-	system.Exchange = exchange
-	system.Queue = queue
-	return system
+func NewSystem(database string, exchange string, queue string) *system {
+	m := &system{}
+	m.database = database
+	m.exchange = exchange
+	m.queue = queue
+	return m
 }
 
-func (m *System) _ValidateWhitelist(value string) bool {
-	collection := facade.Db[m.Database].Collection("whitelist")
+func (m *system) validateWhitelist(value string) bool {
+	collection := facade.Db[m.database].Collection("whitelist")
 	var someone map[string]interface{}
 	result := collection.FindOne(context.Background(), bson.D{{"domain", value}})
 	return result.Decode(&someone) == nil
 }
 
-func (m *System) Subscribe() {
-	var err error
-	defer facade.ThrowException()
-
-	if err = m._DeclareMQ(); err != nil {
+func (m *system) Run() {
+	if err = m.defined(); err != nil {
 		panic(err.Error())
 	}
 
@@ -49,9 +45,8 @@ func (m *System) Subscribe() {
 	}
 
 	// start consume
-	var msg <-chan amqp.Delivery
-	if msg, err = facade.AMQPChannel.Consume(
-		m.Queue,
+	if m.delivery, err = facade.AMQPChannel.Consume(
+		m.queue,
 		"",
 		false,
 		false,
@@ -62,26 +57,32 @@ func (m *System) Subscribe() {
 		panic(err.Error())
 	}
 
-	go func() {
-		defer facade.WG.Done()
-		for x := range msg {
-			var source Logs
-			if err = bson.UnmarshalExtJSON(x.Body, true, &source); err != nil {
-				panic(err.Error())
-			}
+	go m.subscribe()
+}
 
-			if m._ValidateWhitelist(source.Publish) {
-				date := time.Unix(source.Time, 0)
-				source.Data["create_time"] = date
-				collection := facade.Db[m.Database].Collection(source.Publish)
-				if _, err = collection.InsertOne(context.Background(), source.Data); err != nil {
-					panic(err.Error())
-				}
-			}
-
-			if err = x.Ack(false); err != nil {
-				panic(err.Error())
-			}
+func (m *system) subscribe() {
+	var err error
+	defer facade.WG.Done()
+	for msg := range m.delivery {
+		var source logs
+		if err = bson.UnmarshalExtJSON(msg.Body, true, &source); err != nil {
+			m.ack(&msg)
+			println(err.Error())
+			continue
 		}
-	}()
+
+		if !m.validateWhitelist(source.Publish) {
+			continue
+		}
+
+		date := time.Unix(source.Time, 0)
+		source.Data["create_time"] = date
+		collection := facade.Db[m.database].Collection(source.Publish)
+
+		if _, err = collection.InsertOne(context.Background(), source.Data); err != nil {
+			println(err.Error())
+		} else {
+			m.ack(&msg)
+		}
+	}
 }

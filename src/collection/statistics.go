@@ -3,49 +3,46 @@ package collection
 import (
 	"github.com/kainonly/collection-service/src/facade"
 	"github.com/mongodb/mongo-go-driver/bson"
-	"github.com/streadway/amqp"
 )
 
 type (
-	Statistics struct {
-		Common
+	statistics struct {
+		common
 	}
 
-	Information struct {
-		Authorization
+	information struct {
+		authorization
 		Data      map[string]interface{}
 		TimeField []string `bson:"time_field" json:"time_field"`
 	}
 
-	Authorization struct {
+	authorization struct {
 		Appid  string
 		Secret string
 	}
 )
 
-func NewStatistics(exchange string, queue string) *Statistics {
-	statistics := &Statistics{}
-	statistics.Exchange = exchange
-	statistics.Queue = queue
-	return statistics
+func NewStatistics(exchange string, queue string) *statistics {
+	m := &statistics{}
+	m.exchange = exchange
+	m.queue = queue
+	return m
 }
 
-func (m *Statistics) _ValidateRole(authorization Authorization) (string, error) {
+func (m *statistics) _ValidateRole(auth authorization) (string, error) {
 	return "", nil
 }
 
-func (m *Statistics) Subscribe() {
+func (m *statistics) Run() {
 	var err error
-	defer facade.ThrowException()
 
-	if err = m._DeclareMQ(); err != nil {
+	if err = m.defined(); err != nil {
 		panic(err.Error())
 	}
 
 	// start consume
-	var msg <-chan amqp.Delivery
-	if msg, err = facade.AMQPChannel.Consume(
-		m.Queue,
+	if m.delivery, err = facade.AMQPChannel.Consume(
+		m.queue,
 		"",
 		false,
 		false,
@@ -56,25 +53,27 @@ func (m *Statistics) Subscribe() {
 		panic(err.Error())
 	}
 
-	go func() {
-		defer facade.WG.Done()
-		for x := range msg {
-			var source Information
-			if err = bson.UnmarshalExtJSON(x.Body, true, &source); err != nil {
-				panic(err.Error())
-			}
+	go m.subscribe()
+}
 
-			var database string
-			if database, err = m._ValidateRole(source.Authorization); err != nil {
-				panic(err.Error())
-			}
-
-			println(database)
-			println(x.Body)
-
-			if err = x.Ack(false); err != nil {
-				panic(err.Error())
-			}
+func (m *statistics) subscribe() {
+	defer facade.WG.Done()
+	for x := range m.delivery {
+		var source information
+		if err = bson.UnmarshalExtJSON(x.Body, true, &source); err != nil {
+			panic(err.Error())
 		}
-	}()
+
+		var database string
+		if database, err = m._ValidateRole(source.authorization); err != nil {
+			panic(err.Error())
+		}
+
+		println(database)
+		println(x.Body)
+
+		if err = x.Ack(false); err != nil {
+			panic(err.Error())
+		}
+	}
 }
