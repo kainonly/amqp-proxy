@@ -1,20 +1,30 @@
 package facade
 
 import (
-	"context"
 	"github.com/mongodb/mongo-go-driver/mongo"
 	"github.com/streadway/amqp"
+	"reflect"
+	"runtime"
 	"sync"
 )
 
-var MGOClient *mongo.Client
+var (
+	MGOClient      *mongo.Client
+	Db             map[string]*mongo.Database
+	AMQPConnection *amqp.Connection
+	AMQPChannel    *amqp.Channel
+	WG             sync.WaitGroup
+)
 
-var Db map[string]*mongo.Database
-
-var Cancel context.CancelFunc
-
-var AMQPConnection *amqp.Connection
-
-var AMQPChannel *amqp.Channel
-
-var WG sync.WaitGroup
+func ThrowException() {
+	if r := recover(); r != nil {
+		switch reflect.TypeOf(r).String() {
+		case "*runtime.TypeAssertionError":
+			println(r.(*runtime.TypeAssertionError).Error())
+			break
+		case "string":
+			println(r)
+			break
+		}
+	}
+}
