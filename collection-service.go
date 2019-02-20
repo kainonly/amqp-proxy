@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/go-ini/ini"
 	"github.com/kainonly/collection-service/src/common"
+	"github.com/kainonly/collection-service/src/facade"
 	"github.com/kainonly/collection-service/src/logs"
 )
 
@@ -15,7 +16,7 @@ func main() {
 		panic(err.Error())
 	}
 
-	if config.CheckArgs() {
+	if config.ValidateArgs() {
 		panic("please set cogs.ini!")
 	}
 
@@ -27,17 +28,20 @@ func main() {
 		panic(err.Error())
 	}
 
+	// recover print
+	defer facade.AMQPConnection.Close()
+	defer facade.AMQPChannel.Close()
+	defer facade.Cancel()
+	defer func() {
+		if r := recover(); r != nil {
+			println(r.(string))
+		}
+	}()
+
 	// running application
 	logs.NewSystem(
 		config.SystemDatabase,
 		config.SystemExchange,
 		config.SystemQueue,
 	).Subscribe()
-
-	// recover panic
-	defer func() {
-		if r := recover(); r != nil {
-			println("error:", r)
-		}
-	}()
 }

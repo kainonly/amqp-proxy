@@ -36,7 +36,7 @@ type Logs struct {
 	SystemQueue    string `ini:"system_queue"`
 }
 
-func (m *Cogs) CheckArgs() bool {
+func (m *Cogs) ValidateArgs() bool {
 	return reflect.DeepEqual(m.Rabbitmq, Rabbitmq{}) ||
 		reflect.DeepEqual(m.Mongodb, Mongodb{}) ||
 		reflect.DeepEqual(m.Logs, Logs{})
@@ -55,13 +55,11 @@ func (m *Cogs) RegisteredAMQP() error {
 	if facade.AMQPConnection, err = amqp.Dial(url); err != nil {
 		return err
 	}
-	defer facade.AMQPConnection.Close()
 
 	// Create AMQP channel
 	if facade.AMQPChannel, err = facade.AMQPConnection.Channel(); err != nil {
 		return err
 	}
-	defer facade.AMQPChannel.Close()
 
 	return nil
 }
@@ -79,14 +77,15 @@ func (m *Cogs) RegisteredMongo() error {
 		return err
 	}
 
+	var ctx context.Context
 	// connect mongodb
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	ctx, facade.Cancel = context.WithTimeout(context.Background(), 10*time.Second)
 	if err = facade.MGOClient.Connect(ctx); err != nil {
 		return err
 	}
 
 	// using database
-	facade.MGODb[m.SystemDatabase] = facade.MGOClient.Database(m.SystemDatabase)
+	facade.Db = make(map[string]*mongo.Database)
+	facade.Db[m.SystemDatabase] = facade.MGOClient.Database(m.SystemDatabase)
 	return nil
 }
