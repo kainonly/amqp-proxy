@@ -10,9 +10,9 @@ import (
 )
 
 type Cogs struct {
-	Rabbitmq `ini:"rabbitmq"`
-	Mongodb  `ini:"mongodb"`
-	Logs     `ini:"logs"`
+	Rabbitmq   `ini:"rabbitmq"`
+	Mongodb    `ini:"mongodb"`
+	Collection `ini:"collection"`
 }
 
 type Rabbitmq struct {
@@ -30,16 +30,18 @@ type Mongodb struct {
 	Password string `ini:"password"`
 }
 
-type Logs struct {
-	SystemDatabase string `ini:"system_database"`
-	SystemExchange string `ini:"system_exchange"`
-	SystemQueue    string `ini:"system_queue"`
+type Collection struct {
+	SystemDatabase     string `ini:"system_database"`
+	SystemExchange     string `ini:"system_exchange"`
+	SystemQueue        string `ini:"system_queue"`
+	StatisticsExchange string `ini:"statistics_exchange"`
+	StatisticsQueue    string `ini:"statistics_queue"`
 }
 
 func (m *Cogs) ValidateArgs() bool {
 	return reflect.DeepEqual(m.Rabbitmq, Rabbitmq{}) ||
 		reflect.DeepEqual(m.Mongodb, Mongodb{}) ||
-		reflect.DeepEqual(m.Logs, Logs{})
+		reflect.DeepEqual(m.Collection, Collection{})
 }
 
 func (m *Cogs) RegisteredAMQP() error {
