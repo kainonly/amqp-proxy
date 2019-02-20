@@ -8,9 +8,8 @@ import (
 	"github.com/mongodb/mongo-go-driver/mongo"
 )
 
-var err error
-
 func main() {
+	var err error
 	config := new(common.Cogs)
 	// load env
 	if err = ini.MapTo(config, "cogs.ini"); err != nil {
@@ -32,13 +31,6 @@ func main() {
 	if err = config.RegisteredMongo(); err != nil {
 		panic(err.Error())
 	}
-
-	// recover print
-	defer func() {
-		if r := recover(); r != nil {
-			println(r.(string))
-		}
-	}()
 
 	facade.WG.Add(2)
 	// collection system log

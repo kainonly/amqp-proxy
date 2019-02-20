@@ -8,16 +8,18 @@ import (
 	"time"
 )
 
-type System struct {
-	Database string
-	Common
-}
+type (
+	System struct {
+		Database string
+		Common
+	}
 
-type Logs struct {
-	Publish string
-	Data    map[string]interface{}
-	Time    int64
-}
+	Logs struct {
+		Publish string
+		Data    map[string]interface{}
+		Time    int64
+	}
+)
 
 func NewSystem(database string, exchange string, queue string) *System {
 	system := &System{}
@@ -36,6 +38,8 @@ func (m *System) _ValidateWhitelist(value string) bool {
 
 func (m *System) Subscribe() {
 	var err error
+	defer facade.ThrowException()
+
 	if err = m._DeclareMQ(); err != nil {
 		panic(err.Error())
 	}

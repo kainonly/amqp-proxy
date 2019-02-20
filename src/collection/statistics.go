@@ -6,19 +6,22 @@ import (
 	"github.com/streadway/amqp"
 )
 
-type Statistics struct {
-	Common
-}
+type (
+	Statistics struct {
+		Common
+	}
 
-type Information struct {
-	Authorization
-	Data map[string]interface{}
-}
+	Information struct {
+		Authorization
+		Data      map[string]interface{}
+		TimeField []string `bson:"time_field" json:"time_field"`
+	}
 
-type Authorization struct {
-	Appid  string
-	Secret string
-}
+	Authorization struct {
+		Appid  string
+		Secret string
+	}
+)
 
 func NewStatistics(exchange string, queue string) *Statistics {
 	statistics := &Statistics{}
@@ -33,6 +36,8 @@ func (m *Statistics) _ValidateRole(authorization Authorization) (string, error) 
 
 func (m *Statistics) Subscribe() {
 	var err error
+	defer facade.ThrowException()
+
 	if err = m._DeclareMQ(); err != nil {
 		panic(err.Error())
 	}
@@ -66,6 +71,10 @@ func (m *Statistics) Subscribe() {
 
 			println(database)
 			println(x.Body)
+
+			if err = x.Ack(false); err != nil {
+				panic(err.Error())
+			}
 		}
 	}()
 }
