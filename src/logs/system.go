@@ -9,7 +9,7 @@ import (
 )
 
 type System struct {
-	Database string
+	Base
 	Exchange string
 	Queue    string
 }
@@ -21,11 +21,11 @@ type Logs struct {
 }
 
 func NewSystem(database string, exchange string, queue string) *System {
-	return &System{
-		Database: database,
-		Exchange: exchange,
-		Queue:    queue,
-	}
+	system := &System{}
+	system.Database = database
+	system.Exchange = exchange
+	system.Queue = queue
+	return system
 }
 
 func (m *System) Subscribe() {
@@ -85,10 +85,10 @@ func (m *System) Subscribe() {
 			panic(err.Error())
 		}
 
-		if CheckAllowDomain(source.Publish) {
+		if m.ValidateWhitelist("domain", source.Publish) {
 			date := time.Unix(source.Time, 0)
 			source.Data["create_time"] = date
-			collection := facade.MGODb[m.Database].Collection(source.Publish)
+			collection := facade.Db[m.Database].Collection(source.Publish)
 			if _, err = collection.InsertOne(context.Background(), source.Data); err != nil {
 				panic(err.Error())
 			}
