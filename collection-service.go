@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/go-ini/ini"
+	"github.com/kainonly/collection-service/src/collection"
 	"github.com/kainonly/collection-service/src/common"
 	"github.com/kainonly/collection-service/src/facade"
-	"github.com/kainonly/collection-service/src/logs"
 )
 
 var err error
@@ -38,10 +38,19 @@ func main() {
 		}
 	}()
 
-	// running application
-	logs.NewSystem(
+	facade.WG.Add(2)
+	// collection system log
+	collection.NewSystem(
 		config.SystemDatabase,
 		config.SystemExchange,
 		config.SystemQueue,
 	).Subscribe()
+
+	// collection information
+	collection.NewStatistics(
+		config.StatisticsExchange,
+		config.StatisticsQueue,
+	).Subscribe()
+
+	facade.WG.Wait()
 }
