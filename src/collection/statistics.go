@@ -34,9 +34,11 @@ func (m *statistics) _ValidateRole(auth authorization) (string, error) {
 }
 
 func (m *statistics) Run() {
-	var err error
-
 	if err = m.defined(); err != nil {
+		panic(err.Error())
+	}
+
+	if err = facade.AMQPChannel.Qos(1, 0, false); err != nil {
 		panic(err.Error())
 	}
 
@@ -57,23 +59,25 @@ func (m *statistics) Run() {
 }
 
 func (m *statistics) subscribe() {
+	var err error
 	defer facade.WG.Done()
-	for x := range m.delivery {
+
+	for msg := range m.delivery {
 		var source information
-		if err = bson.UnmarshalExtJSON(x.Body, true, &source); err != nil {
-			panic(err.Error())
+		if err = bson.UnmarshalExtJSON(msg.Body, true, &source); err != nil {
+			m.ack(&msg)
+			println(err.Error())
+			continue
 		}
 
 		var database string
 		if database, err = m._ValidateRole(source.authorization); err != nil {
-			panic(err.Error())
+			m.ack(&msg)
+			println(err.Error())
+			continue
 		}
 
 		println(database)
-		println(x.Body)
-
-		if err = x.Ack(false); err != nil {
-			panic(err.Error())
-		}
+		m.ack(&msg)
 	}
 }
