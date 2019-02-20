@@ -5,6 +5,7 @@ import (
 	"github.com/kainonly/collection-service/src/collection"
 	"github.com/kainonly/collection-service/src/common"
 	"github.com/kainonly/collection-service/src/facade"
+	"github.com/mongodb/mongo-go-driver/mongo"
 )
 
 var err error
@@ -24,14 +25,15 @@ func main() {
 		panic(err.Error())
 	}
 
+	defer facade.AMQPConnection.Close()
+	defer facade.AMQPChannel.Close()
+
+	facade.Db = make(map[string]*mongo.Database)
 	if err = config.RegisteredMongo(); err != nil {
 		panic(err.Error())
 	}
 
 	// recover print
-	defer facade.AMQPConnection.Close()
-	defer facade.AMQPChannel.Close()
-	defer facade.Cancel()
 	defer func() {
 		if r := recover(); r != nil {
 			println(r.(string))
