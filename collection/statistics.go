@@ -9,10 +9,12 @@ import (
 type (
 	statistics struct {
 		base
+		app string
 	}
 
 	information struct {
 		Authorization authorization
+		Namespace     string
 		Data          map[string]interface{}
 		Time_Field    []string
 	}
@@ -31,15 +33,18 @@ func NewStatistics(exchange string, queue string) *statistics {
 	return _statistics
 }
 
-func (c *statistics) validateRole(auth authorization) (string, error) {
+func (c *statistics) validateRole(auth authorization) bool {
 	collection := facade.Db["collection_service"].Collection("authorization")
 	var someone map[string]interface{}
-	err = collection.FindOne(context.Background(), bson.D{
+	if err = collection.FindOne(context.Background(), bson.D{
 		{"appid", auth.Appid},
 		{"secret", auth.Secret},
-	}).Decode(&someone)
-
-	return "", err
+	}).Decode(&someone); err == nil {
+		c.app = someone["app"].(string)
+		return true
+	} else {
+		return false
+	}
 }
 
 func (c *statistics) subscribe() {
@@ -53,15 +58,22 @@ func (c *statistics) subscribe() {
 			continue
 		}
 
-		println(source.Authorization.Appid)
+		if !c.validateRole(source.Authorization) {
+			c.ack(&msg)
+			println("authorization failed!")
+			continue
+		}
 
-		//var app string
-		//if _, err = c.validateRole(source.Authorization); err != nil {
-		//	c.ack(&msg)
-		//	println(err.Error())
-		//	continue
-		//}
-		//
-		//println(app)
+		if facade.Db[c.app] == nil {
+			facade.Db[c.app] = facade.MGOClient.Database(c.app)
+		}
+
+		collection := facade.Db[c.app].Collection(source.Namespace)
+
+		if _, err = collection.InsertOne(context.Background(), source.Data); err != nil {
+			println(err.Error())
+		} else {
+			c.ack(&msg)
+		}
 	}
 }
