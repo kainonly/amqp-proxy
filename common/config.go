@@ -11,12 +11,12 @@ import (
 
 type (
 	Cogs struct {
-		Rabbitmq   `ini:"rabbitmq"`
-		Mongodb    `ini:"mongodb"`
-		Collection `ini:"collection"`
+		Rabbitmq   rabbitmq   `ini:"rabbitmq"`
+		Mongodb    mongodb    `ini:"mongodb"`
+		Collection collection `ini:"collection"`
 	}
 
-	Rabbitmq struct {
+	rabbitmq struct {
 		Hostname string `ini:"hostname"`
 		Port     string `ini:"port"`
 		Username string `ini:"username"`
@@ -24,14 +24,14 @@ type (
 		Vhost    string `ini:"vhost"`
 	}
 
-	Mongodb struct {
+	mongodb struct {
 		Hostname string `ini:"hostname"`
 		Port     string `ini:"port"`
 		Username string `ini:"username"`
 		Password string `ini:"password"`
 	}
 
-	Collection struct {
+	collection struct {
 		SystemDatabase     string `ini:"system_database"`
 		SystemExchange     string `ini:"system_exchange"`
 		SystemQueue        string `ini:"system_queue"`
@@ -41,9 +41,9 @@ type (
 )
 
 func (m *Cogs) ValidateArgs() bool {
-	return reflect.DeepEqual(m.Rabbitmq, Rabbitmq{}) ||
-		reflect.DeepEqual(m.Mongodb, Mongodb{}) ||
-		reflect.DeepEqual(m.Collection, Collection{})
+	return reflect.DeepEqual(m.Rabbitmq, rabbitmq{}) ||
+		reflect.DeepEqual(m.Mongodb, mongodb{}) ||
+		reflect.DeepEqual(m.Collection, collection{})
 }
 
 func (m *Cogs) RegisteredAMQP() error {
@@ -89,6 +89,6 @@ func (m *Cogs) RegisteredMongo() error {
 	defer cancel()
 
 	// using database
-	facade.Db[m.SystemDatabase] = facade.MGOClient.Database(m.SystemDatabase)
+	facade.Db[m.Collection.SystemDatabase] = facade.MGOClient.Database(m.Collection.SystemDatabase)
 	return nil
 }
