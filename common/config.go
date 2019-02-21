@@ -35,7 +35,6 @@ type (
 		Database       string `ini:"database"`
 		Exchange       string `ini:"exchange"`
 		Queue          string `ini:"queue"`
-		SystemDatabase string `ini:"system_database"`
 		SystemExchange string `ini:"system_exchange"`
 		SystemQueue    string `ini:"system_queue"`
 	}
@@ -91,6 +90,5 @@ func (c *Cogs) RegisteredMongo() error {
 
 	// using database
 	facade.Db[c.Collection.Database] = facade.MGOClient.Database(c.Collection.Database)
-	facade.Db[c.Collection.SystemDatabase] = facade.MGOClient.Database(c.Collection.SystemDatabase)
 	return nil
 }

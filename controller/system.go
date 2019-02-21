@@ -10,7 +10,6 @@ import (
 type (
 	system struct {
 		base
-		systemDb string
 	}
 
 	logs struct {
@@ -22,7 +21,7 @@ type (
 
 func NewSystem(database string, exchange string, queue string) *system {
 	_system := &system{}
-	_system.systemDb = database
+	_system.database = database
 	_system.exchange = exchange
 	_system.queue = queue
 	_system.base.subscribe = _system.subscribe
@@ -30,7 +29,7 @@ func NewSystem(database string, exchange string, queue string) *system {
 }
 
 func (c *system) validateWhitelist(value string) bool {
-	collection := facade.Db[c.systemDb].Collection("whitelist")
+	collection := facade.Db[c.database].Collection("whitelist")
 	var someone map[string]interface{}
 	result := collection.FindOne(context.Background(), bson.D{{"domain", value}})
 	return result.Decode(&someone) == nil
@@ -39,6 +38,7 @@ func (c *system) validateWhitelist(value string) bool {
 func (c *system) subscribe() {
 	var err error
 	defer facade.WG.Done()
+
 	for msg := range c.delivery {
 		var source logs
 		if err = bson.UnmarshalExtJSON(msg.Body, true, &source); err != nil {
@@ -58,7 +58,7 @@ func (c *system) subscribe() {
 		}
 
 		source.Data["create_time"] = _carbon.Time
-		collection := facade.Db[c.systemDb].Collection(source.Publish)
+		collection := facade.Db[c.database].Collection(source.Publish)
 
 		if _, err = collection.InsertOne(context.Background(), source.Data); err != nil {
 			println(err.Error())

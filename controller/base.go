@@ -7,6 +7,7 @@ import (
 
 type (
 	base struct {
+		database  string
 		exchange  string
 		queue     string
 		delivery  <-chan amqp.Delivery

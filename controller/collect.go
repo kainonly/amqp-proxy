@@ -11,8 +11,7 @@ import (
 type (
 	collect struct {
 		base
-		database string
-		appDb    string
+		app string
 	}
 
 	information struct {
@@ -44,7 +43,7 @@ func (c *collect) validateRole(auth authorization) bool {
 		{"appid", auth.Appid},
 		{"secret", auth.Secret},
 	}).Decode(&someone); err == nil {
-		c.appDb = someone["app"].(string)
+		c.app = someone["app"].(string)
 		return true
 	} else {
 		return false
@@ -68,8 +67,8 @@ func (c *collect) subscribe() {
 			continue
 		}
 
-		if facade.Db[c.appDb] == nil {
-			facade.Db[c.appDb] = facade.MGOClient.Database(c.appDb)
+		if facade.Db[c.app] == nil {
+			facade.Db[c.app] = facade.MGOClient.Database(c.app)
 		}
 
 		for _, x := range source.Time_Field {
@@ -87,7 +86,7 @@ func (c *collect) subscribe() {
 			}
 		}
 
-		collection := facade.Db[c.appDb].Collection(source.Motivation)
+		collection := facade.Db[c.app].Collection(source.Motivation)
 		if _, err = collection.InsertOne(context.Background(), source.Data); err != nil {
 			println(err.Error())
 		} else {
