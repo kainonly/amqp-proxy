@@ -1,2 +1,4 @@
 # collection-service
-Collected with rabbitmq and mongo
+
+日志收集服务
+

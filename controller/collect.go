@@ -80,9 +80,10 @@ func (c *collect) subscribe() {
 				var _carbon *carbon.Carbon
 				if _carbon, err = carbon.CreateFromTimestampUTC(int64(source.Data[x].(int32))); err != nil {
 					println(err.Error())
-					continue
+					source.Data[x] = nil
+				} else {
+					source.Data[x] = _carbon.Time
 				}
-				source.Data[x] = _carbon.Time
 			}
 		}
 
