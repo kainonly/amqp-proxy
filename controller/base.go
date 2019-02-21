@@ -1,4 +1,4 @@
-package collection
+package controller
 
 import (
 	"github.com/kainonly/collection-service/facade"

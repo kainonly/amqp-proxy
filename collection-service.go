@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/go-ini/ini"
-	"github.com/kainonly/collection-service/collection"
 	"github.com/kainonly/collection-service/common"
+	"github.com/kainonly/collection-service/controller"
 	"github.com/kainonly/collection-service/facade"
 	"github.com/mongodb/mongo-go-driver/mongo"
 )
@@ -34,17 +34,19 @@ func main() {
 	}
 
 	facade.WG.Add(2)
+
+	// collection information
+	controller.NewStatistics(
+		config.Collection.Database,
+		config.Collection.Exchange,
+		config.Collection.Queue,
+	).Run()
+
 	// collection system log
-	collection.NewSystem(
+	controller.NewSystem(
 		config.Collection.SystemDatabase,
 		config.Collection.SystemExchange,
 		config.Collection.SystemQueue,
-	).Run()
-
-	// collection information
-	collection.NewStatistics(
-		config.Collection.StatisticsExchange,
-		config.Collection.StatisticsQueue,
 	).Run()
 
 	facade.WG.Wait()

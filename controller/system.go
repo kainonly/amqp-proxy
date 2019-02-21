@@ -1,16 +1,16 @@
-package collection
+package controller
 
 import (
 	"context"
 	"github.com/kainonly/collection-service/facade"
 	"github.com/mongodb/mongo-go-driver/bson"
-	"time"
+	"github.com/uniplaces/carbon"
 )
 
 type (
 	system struct {
 		base
-		database string
+		systemDb string
 	}
 
 	logs struct {
@@ -22,7 +22,7 @@ type (
 
 func NewSystem(database string, exchange string, queue string) *system {
 	_system := &system{}
-	_system.database = database
+	_system.systemDb = database
 	_system.exchange = exchange
 	_system.queue = queue
 	_system.base.subscribe = _system.subscribe
@@ -30,7 +30,7 @@ func NewSystem(database string, exchange string, queue string) *system {
 }
 
 func (c *system) validateWhitelist(value string) bool {
-	collection := facade.Db[c.database].Collection("whitelist")
+	collection := facade.Db[c.systemDb].Collection("whitelist")
 	var someone map[string]interface{}
 	result := collection.FindOne(context.Background(), bson.D{{"domain", value}})
 	return result.Decode(&someone) == nil
@@ -51,9 +51,14 @@ func (c *system) subscribe() {
 			continue
 		}
 
-		date := time.Unix(source.Time, 0)
-		source.Data["create_time"] = date
-		collection := facade.Db[c.database].Collection(source.Publish)
+		var _carbon *carbon.Carbon
+		if _carbon, err = carbon.CreateFromTimestampUTC(source.Time); err != nil {
+			println(err.Error())
+			continue
+		}
+
+		source.Data["create_time"] = _carbon.Time
+		collection := facade.Db[c.systemDb].Collection(source.Publish)
 
 		if _, err = collection.InsertOne(context.Background(), source.Data); err != nil {
 			println(err.Error())
