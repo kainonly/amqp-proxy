@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/go-ini/ini"
-	"github.com/kainonly/collection-service/src/collection"
-	"github.com/kainonly/collection-service/src/common"
-	"github.com/kainonly/collection-service/src/facade"
+	"github.com/kainonly/collection-service/collection"
+	"github.com/kainonly/collection-service/common"
+	"github.com/kainonly/collection-service/facade"
 	"github.com/mongodb/mongo-go-driver/mongo"
 )
 
