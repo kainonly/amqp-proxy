@@ -44,7 +44,7 @@ func main() {
 
 	// collection system log
 	controller.NewSystem(
-		config.Collection.SystemDatabase,
+		config.Collection.Database,
 		config.Collection.SystemExchange,
 		config.Collection.SystemQueue,
 	).Run()

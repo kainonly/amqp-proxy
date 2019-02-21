@@ -48,16 +48,19 @@ func (c *system) subscribe() {
 		}
 
 		if !c.validateWhitelist(source.Publish) {
+			c.ack(&msg)
+			println("not in whitelist!")
 			continue
 		}
 
 		var _carbon *carbon.Carbon
 		if _carbon, err = carbon.CreateFromTimestampUTC(source.Time); err != nil {
 			println(err.Error())
-			continue
+			source.Data["create_time"] = nil
+		} else {
+			source.Data["create_time"] = _carbon.Time
 		}
 
-		source.Data["create_time"] = _carbon.Time
 		collection := facade.Db[c.database].Collection(source.Publish)
 
 		if _, err = collection.InsertOne(context.Background(), source.Data); err != nil {
