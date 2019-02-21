@@ -32,28 +32,29 @@ type (
 	}
 
 	collection struct {
-		SystemDatabase     string `ini:"system_database"`
-		SystemExchange     string `ini:"system_exchange"`
-		SystemQueue        string `ini:"system_queue"`
-		StatisticsExchange string `ini:"statistics_exchange"`
-		StatisticsQueue    string `ini:"statistics_queue"`
+		Database       string `ini:"database"`
+		Exchange       string `ini:"exchange"`
+		Queue          string `ini:"queue"`
+		SystemDatabase string `ini:"system_database"`
+		SystemExchange string `ini:"system_exchange"`
+		SystemQueue    string `ini:"system_queue"`
 	}
 )
 
-func (m *Cogs) ValidateArgs() bool {
-	return reflect.DeepEqual(m.Rabbitmq, rabbitmq{}) ||
-		reflect.DeepEqual(m.Mongodb, mongodb{}) ||
-		reflect.DeepEqual(m.Collection, collection{})
+func (c *Cogs) ValidateArgs() bool {
+	return reflect.DeepEqual(c.Rabbitmq, rabbitmq{}) ||
+		reflect.DeepEqual(c.Mongodb, mongodb{}) ||
+		reflect.DeepEqual(c.Collection, collection{})
 }
 
-func (m *Cogs) RegisteredAMQP() error {
+func (c *Cogs) RegisteredAMQP() error {
 	var err error
 	url := "amqp://" +
-		m.Rabbitmq.Username + ":" +
-		m.Rabbitmq.Password + "@" +
-		m.Rabbitmq.Hostname + ":" +
-		m.Rabbitmq.Port +
-		m.Rabbitmq.Vhost
+		c.Rabbitmq.Username + ":" +
+		c.Rabbitmq.Password + "@" +
+		c.Rabbitmq.Hostname + ":" +
+		c.Rabbitmq.Port +
+		c.Rabbitmq.Vhost
 
 	// Connect RabbitMQ
 	if facade.AMQPConnection, err = amqp.Dial(url); err != nil {
@@ -68,13 +69,13 @@ func (m *Cogs) RegisteredAMQP() error {
 	return nil
 }
 
-func (m *Cogs) RegisteredMongo() error {
+func (c *Cogs) RegisteredMongo() error {
 	var err error
 	dsn := "mongodb://" +
-		m.Mongodb.Username + ":" +
-		m.Mongodb.Password + "@" +
-		m.Mongodb.Hostname + ":" +
-		m.Mongodb.Port
+		c.Mongodb.Username + ":" +
+		c.Mongodb.Password + "@" +
+		c.Mongodb.Hostname + ":" +
+		c.Mongodb.Port
 
 	// create mongodb client
 	if facade.MGOClient, err = mongo.NewClient(dsn); err != nil {
@@ -89,7 +90,7 @@ func (m *Cogs) RegisteredMongo() error {
 	defer cancel()
 
 	// using database
-	facade.Db["collection_service"] = facade.MGOClient.Database("collection_service")
-	facade.Db[m.Collection.SystemDatabase] = facade.MGOClient.Database(m.Collection.SystemDatabase)
+	facade.Db[c.Collection.Database] = facade.MGOClient.Database(c.Collection.Database)
+	facade.Db[c.Collection.SystemDatabase] = facade.MGOClient.Database(c.Collection.SystemDatabase)
 	return nil
 }
