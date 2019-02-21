@@ -1,6 +1,7 @@
 package collection
 
 import (
+	"context"
 	"github.com/kainonly/collection-service/facade"
 	"github.com/mongodb/mongo-go-driver/bson"
 )
@@ -11,9 +12,9 @@ type (
 	}
 
 	information struct {
-		authorization
-		Data      map[string]interface{}
-		TimeField []string `bson:"time_field" json:"time_field"`
+		Authorization authorization
+		Data          map[string]interface{}
+		Time_Field    []string
 	}
 
 	authorization struct {
@@ -29,8 +30,15 @@ func NewStatistics(exchange string, queue string) *statistics {
 	return m
 }
 
-func (m *statistics) _ValidateRole(auth authorization) (string, error) {
-	return "", nil
+func (m *statistics) validateRole(auth authorization) (string, error) {
+	collection := facade.Db["collection_service"].Collection("authorization")
+	var someone map[string]interface{}
+	err = collection.FindOne(context.Background(), bson.D{
+		{"appid", auth.Appid},
+		{"secret", auth.Secret},
+	}).Decode(&someone)
+
+	return "", err
 }
 
 func (m *statistics) Run() {
@@ -59,25 +67,28 @@ func (m *statistics) Run() {
 }
 
 func (m *statistics) subscribe() {
-	var err error
+	//var err error
 	defer facade.WG.Done()
 
 	for msg := range m.delivery {
 		var source information
 		if err = bson.UnmarshalExtJSON(msg.Body, true, &source); err != nil {
-			m.ack(&msg)
+			//m.ack(&msg)
 			println(err.Error())
 			continue
 		}
 
-		var database string
-		if database, err = m._ValidateRole(source.authorization); err != nil {
-			m.ack(&msg)
-			println(err.Error())
-			continue
-		}
-
-		println(database)
+		println(source.Authorization.Appid)
+		println(source.Time_Field)
+		//
+		////var app string
+		//if _, err = m.validateRole(source.authorization); err != nil {
+		//	m.ack(&msg)
+		//	println(err.Error())
+		//	continue
+		//}
+		//
+		////println(app)
 		m.ack(&msg)
 	}
 }

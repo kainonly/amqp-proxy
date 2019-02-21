@@ -8,8 +8,9 @@ import (
 	"github.com/mongodb/mongo-go-driver/mongo"
 )
 
+var err error
+
 func main() {
-	var err error
 	config := new(common.Cogs)
 	// load env
 	if err = ini.MapTo(config, "cogs.ini"); err != nil {
@@ -35,15 +36,15 @@ func main() {
 	facade.WG.Add(2)
 	// collection system log
 	collection.NewSystem(
-		config.SystemDatabase,
-		config.SystemExchange,
-		config.SystemQueue,
+		config.Collection.SystemDatabase,
+		config.Collection.SystemExchange,
+		config.Collection.SystemQueue,
 	).Run()
 
 	// collection information
 	collection.NewStatistics(
-		config.StatisticsExchange,
-		config.StatisticsQueue,
+		config.Collection.StatisticsExchange,
+		config.Collection.StatisticsQueue,
 	).Run()
 
 	facade.WG.Wait()
