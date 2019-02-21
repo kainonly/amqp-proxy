@@ -2,7 +2,7 @@ package common
 
 import (
 	"context"
-	"github.com/kainonly/collection-service/src/facade"
+	"github.com/kainonly/collection-service/facade"
 	"github.com/mongodb/mongo-go-driver/mongo"
 	"github.com/streadway/amqp"
 	"reflect"
