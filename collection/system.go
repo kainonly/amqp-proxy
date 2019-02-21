@@ -9,8 +9,8 @@ import (
 
 type (
 	system struct {
+		base
 		database string
-		common
 	}
 
 	logs struct {
@@ -21,68 +21,44 @@ type (
 )
 
 func NewSystem(database string, exchange string, queue string) *system {
-	m := &system{}
-	m.database = database
-	m.exchange = exchange
-	m.queue = queue
-	return m
+	_system := &system{}
+	_system.database = database
+	_system.exchange = exchange
+	_system.queue = queue
+	_system.base.subscribe = _system.subscribe
+	return _system
 }
 
-func (m *system) validateWhitelist(value string) bool {
-	collection := facade.Db[m.database].Collection("whitelist")
+func (c *system) validateWhitelist(value string) bool {
+	collection := facade.Db[c.database].Collection("whitelist")
 	var someone map[string]interface{}
 	result := collection.FindOne(context.Background(), bson.D{{"domain", value}})
 	return result.Decode(&someone) == nil
 }
 
-func (m *system) Run() {
-	if err = m.defined(); err != nil {
-		panic(err.Error())
-	}
-
-	if err = facade.AMQPChannel.Qos(1, 0, false); err != nil {
-		panic(err.Error())
-	}
-
-	// start consume
-	if m.delivery, err = facade.AMQPChannel.Consume(
-		m.queue,
-		"",
-		false,
-		false,
-		false,
-		false,
-		nil,
-	); err != nil {
-		panic(err.Error())
-	}
-
-	go m.subscribe()
-}
-
-func (m *system) subscribe() {
+func (c *system) subscribe() {
 	var err error
 	defer facade.WG.Done()
-	for msg := range m.delivery {
+	for msg := range c.delivery {
 		var source logs
 		if err = bson.UnmarshalExtJSON(msg.Body, true, &source); err != nil {
-			m.ack(&msg)
+			c.ack(&msg)
 			println(err.Error())
 			continue
 		}
 
-		if !m.validateWhitelist(source.Publish) {
+		if !c.validateWhitelist(source.Publish) {
 			continue
 		}
 
 		date := time.Unix(source.Time, 0)
 		source.Data["create_time"] = date
-		collection := facade.Db[m.database].Collection(source.Publish)
+		collection := facade.Db[c.database].Collection(source.Publish)
 
 		if _, err = collection.InsertOne(context.Background(), source.Data); err != nil {
 			println(err.Error())
 		} else {
-			m.ack(&msg)
+			c.ack(&msg)
 		}
 	}
 }
