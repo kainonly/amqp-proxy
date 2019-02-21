@@ -89,6 +89,7 @@ func (m *Cogs) RegisteredMongo() error {
 	defer cancel()
 
 	// using database
+	facade.Db["collection_service"] = facade.MGOClient.Database("collection_service")
 	facade.Db[m.Collection.SystemDatabase] = facade.MGOClient.Database(m.Collection.SystemDatabase)
 	return nil
 }
