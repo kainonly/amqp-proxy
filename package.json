@@ -1,0 +1,8 @@
+{
+  "name": "amqp-collection",
+  "version": "1.0.0",
+  "dependencies": {
+    "amqplib": "^0.5.3",
+    "mongodb": "^3.2.3"
+  }
+}
