@@ -8,7 +8,7 @@ amqp.connect(env.amqp_uri).then(async (connect) => {
         channel.assertQueue(env.queue, {durable: true});
         channel.bindQueue(env.queue, env.exchange);
         channel.consume(env.queue, async (msg) => {
-            console.log(msg);
+            console.log(msg.content.toString());
         }, {noAck: false});
     } catch (e) {
         console.log(e)

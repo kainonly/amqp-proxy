@@ -1,9 +1,10 @@
 {
-  "name": "amqp-collection",
+  "name": "amqp-daq-service",
   "version": "1.0.0",
   "dependencies": {
     "amqplib": "^0.5.3",
     "dotenv": "^7.0.0",
+    "joi": "^14.3.1",
     "mongodb": "^3.2.3"
   }
 }
