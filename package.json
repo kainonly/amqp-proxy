@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "dependencies": {
     "amqplib": "^0.5.3",
+    "dotenv": "^7.0.0",
     "mongodb": "^3.2.3"
   }
 }
