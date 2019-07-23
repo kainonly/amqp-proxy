@@ -2,7 +2,9 @@
   "name": "amqp-logging-service",
   "version": "1.1.0",
   "scripts": {
-    "start": "ts-node src/bootstrap.ts"
+    "start": "ts-node src/bootstrap.ts",
+    "build": "webpack",
+    "test": "npm run build & node dist/amqp-logging-service.js"
   },
   "dependencies": {
     "ajv": "^6.10.2",
