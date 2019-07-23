@@ -1,11 +1,25 @@
 {
   "name": "amqp-logging-service",
-  "version": "1.0.0",
+  "version": "1.1.0",
+  "scripts": {
+    "start": "ts-node src/bootstrap.ts"
+  },
   "dependencies": {
+    "ajv": "^6.10.2",
     "amqplib": "^0.5.3",
     "dotenv": "^7.0.0",
-    "joi": "^14.3.1",
-    "mongodb": "^3.2.3",
-    "rxjs": "^6.4.0"
+    "mongodb": "^3.2.3"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.5.13",
+    "@types/dotenv": "^6.1.1",
+    "@types/mongodb": "^3.1.29",
+    "@types/node": "^12.0.3",
+    "@types/webpack": "^4.4.32",
+    "ts-loader": "^6.0.1",
+    "ts-node": "^8.2.0",
+    "typescript": "^3.5.1",
+    "webpack": "^4.32.2",
+    "webpack-cli": "^3.3.2"
   }
 }
