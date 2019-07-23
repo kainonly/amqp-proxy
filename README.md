@@ -27,5 +27,5 @@ queue = collection
 
 - `appid` 应用ID
 - `namespace` 命名空间
-- `data` 收集数据
+- `raws` 收集数据
 
