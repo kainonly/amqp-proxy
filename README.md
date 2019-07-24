@@ -8,8 +8,8 @@
 amqp_uri = amqp://kain:123456@imac.com
 mongo_uri = mongodb://root:123456@imac.com:27017
 database = center
-exchange = logging.service
-queue = collection
+exchange = app.logging.direct
+queue = app.logging.queue
 ```
 
 #### 默认数据库
