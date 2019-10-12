@@ -1,4 +1,15 @@
-import { Client } from '@elastic/elasticsearch';
+import { env } from 'process';
+import { subscribe } from './subscribe';
+import { AmqpService } from './common/amqp.service';
+import { ElasticService } from './common/elastic.service';
 
-const client = new Client({ node: 'http://imac:9200' });
-console.log(client);
+AmqpService.registered(env).ready().then(channel => {
+  const elastic = new ElasticService();
+
+}).catch(err => {
+  if (err) {
+    console.log(err);
+    process.exit(1);
+  }
+});
+
