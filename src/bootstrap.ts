@@ -5,7 +5,7 @@ import { subscribe } from './subscribe';
 import { AmqpService } from './common/amqp.service';
 import { ElasticService } from './common/elastic.service';
 
-const configPath = join(__dirname, 'config.json');
+const configPath = join(__dirname, './config.json');
 if (!existsSync(configPath)) {
   console.log('Please set the config.json project configuration!');
   process.exit(1);
