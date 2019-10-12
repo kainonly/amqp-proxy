@@ -35,3 +35,5 @@ lerna-debug.log*
 package-lock.json
 /storage
 /cache
+cache/config.json
+dist/config.json

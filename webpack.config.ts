@@ -6,6 +6,10 @@ const config: webpack.Configuration = {
   entry: './src/bootstrap.ts',
   target: 'node',
   mode: 'production',
+  node: {
+    __dirname: false,
+    __filename: false,
+  },
   module: {
     rules: [
       {
