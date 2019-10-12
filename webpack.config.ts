@@ -1,13 +1,11 @@
-import path from 'path';
-import webpack from 'webpack';
+import * as path from 'path';
+import * as webpack from 'webpack';
+import * as nodeExternals from 'webpack-node-externals';
 
 const config: webpack.Configuration = {
   entry: './src/bootstrap.ts',
-  target: 'async-node',
+  target: 'node',
   mode: 'production',
-  node: {
-    global: true,
-  },
   module: {
     rules: [
       {
@@ -17,13 +15,15 @@ const config: webpack.Configuration = {
       },
     ],
   },
+  externals: [
+    nodeExternals(),
+  ],
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
   },
   output: {
-    filename: 'amqp-logging-service.js',
+    filename: 'elastic-amqp-stash.js',
     path: path.resolve(__dirname, 'dist'),
-    libraryTarget: 'umd',
   },
 };
 
