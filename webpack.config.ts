@@ -26,7 +26,7 @@ const config: webpack.Configuration = {
     extensions: ['.tsx', '.ts', '.js'],
   },
   output: {
-    filename: 'elastic-amqp-stash.js',
+    filename: 'app.js',
     path: path.resolve(__dirname, 'dist'),
   },
 };
