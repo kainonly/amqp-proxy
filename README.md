@@ -19,11 +19,11 @@ example
 ```yml
 version: '3.7'
 services:
-  schedule:
+  stash:
     image: kainonly/elastic-amqp-stash
     restart: always
     volumes: 
-      - ./stash/config.json:/app/config.json
+      - ./stash/config.json:/app/data/config.json
 ```
 
 ## How to use
@@ -45,20 +45,60 @@ set config.json
     "node": "http://localhost:9200"
   },
   "rule": {
-    "test": {
-      "type": "object",
-      "required": [
-        "name",
-        "age"
-      ],
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "age": {
-          "type": "number"
+    "system": {
+        "type": "object",
+        "required": [
+            "appid",
+            "username",
+            "role",
+            "symbol",
+            "request",
+            "method",
+            "query",
+            "body",
+            "ip",
+            "user_agent",
+            "create_time"
+        ],
+        "properties": {
+            "appid": {
+                "type": "string"
+            },
+            "username": {
+                "type": "string"
+            },
+            "role": {
+                "type": [
+                    "string",
+                    "array"
+                ]
+            },
+            "symbol": {
+                "type": "array"
+            },
+            "request": {
+                "type": "string"
+            },
+            "method": {
+                "type": "string"
+            },
+            "query": {
+                "type": "array"
+            },
+            "body": {
+                "type": "array"
+            },
+            "ip": {
+                "type": "string",
+                "format": "ipv4"
+            },
+            "user_agent": {
+                "type": "string"
+            },
+            "create_time": {
+                "type": "number"
+            }
         }
-      }
     }
   }
 }
