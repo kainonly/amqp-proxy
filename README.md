@@ -74,7 +74,7 @@ set config.json
                 ]
             },
             "symbol": {
-                "type": "array"
+                "type": "object"
             },
             "request": {
                 "type": "string"
@@ -115,10 +115,21 @@ queue message needs to be posted to `elastic.stash.exchange`
 
 ```json
 {
-    "index": "test",
+    "index": "system",
     "body": {
-        "name": "kain",
-        "age": 26
+        "appid": "xx-1",
+        "username": "kain",
+        "role": ["*"],
+        "symbol": {
+          "staff": true
+        },
+        "request": "https://api.developer.com/test/index",
+        "method": "POST",
+        "query": {},
+        "body": {"name": "kain"},
+        "ip": "127.0.0.1",
+        "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) snap Chromium/75.0.3770.142 Chrome/75.0.3770.142 Safari/537.36",
+        "create_time": 1563932873
     }
 }
 ```
