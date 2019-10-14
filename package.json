@@ -3,7 +3,7 @@
   "scripts": {
     "start": "tsc-watch -p src/tsconfig.build.json --onSuccess \"node cache/bootstrap.js\"",
     "build": "rimraf dist && webpack && cpy package.json dist",
-    "prod": "node dist/elastic-amqp-stash.js"
+    "prod": "node dist/app.js"
   },
   "dependencies": {
     "@elastic/elasticsearch": "^7.4.0",
