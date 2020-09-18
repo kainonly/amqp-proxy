@@ -6,7 +6,7 @@ import (
 )
 
 func (c *controller) Get(ctx context.Context, param *pb.GetParameter) (*pb.GetResponse, error) {
-	data, err := c.session.Get(param.Queue)
+	receipt, body, err := c.session.Get(param.Queue)
 	if err != nil {
 		return &pb.GetResponse{
 			Error: 1,
@@ -17,8 +17,8 @@ func (c *controller) Get(ctx context.Context, param *pb.GetParameter) (*pb.GetRe
 		Error: 0,
 		Msg:   "ok",
 		Data: &pb.Data{
-			Receipt: data.Receipt,
-			Body:    data.Body,
+			Receipt: receipt,
+			Body:    body,
 		},
 	}, nil
 }

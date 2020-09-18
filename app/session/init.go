@@ -11,7 +11,7 @@ type Session struct {
 	url             string
 	conn            *amqp.Connection
 	notifyConnClose chan *amqp.Error
-	delivery        *utils.SyncDelivery
+	receipt         *utils.SyncReceipt
 }
 
 func NewSession(url string) (session *Session, err error) {
@@ -25,7 +25,7 @@ func NewSession(url string) (session *Session, err error) {
 	session.notifyConnClose = make(chan *amqp.Error)
 	conn.NotifyClose(session.notifyConnClose)
 	go session.listenConn()
-	session.delivery = utils.NewSyncDelivery()
+	session.receipt = utils.NewSyncReceipt()
 	return
 }
 

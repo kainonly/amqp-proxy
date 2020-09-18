@@ -6,5 +6,9 @@ import (
 )
 
 func (c *controller) Ack(ctx context.Context, param *pb.AckParameter) (*pb.Response, error) {
-	return nil, nil
+	err := c.session.Ack(param.Queue, param.Receipt)
+	if err != nil {
+		return c.response(err)
+	}
+	return c.response(nil)
 }
