@@ -3,16 +3,17 @@ package session
 import "errors"
 
 func (c *Session) Nack(queue string, receipt string) (err error) {
-	msg := c.receipt.Get(receipt)
-	if msg == nil {
+	receiptOption := c.receipt.Get(receipt)
+	if receiptOption == nil {
 		return errors.New("the receipt has expired")
 	}
-	if msg.Queue != queue {
+	if receiptOption.Queue != queue {
 		return errors.New("the receipt verification is incorrect")
 	}
-	err = msg.Delivery.Nack(false, false)
+	err = receiptOption.Delivery.Nack(false, false)
 	if err != nil {
 		return
 	}
+	receiptOption.Channel.Close()
 	return
 }
