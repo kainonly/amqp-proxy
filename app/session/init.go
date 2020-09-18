@@ -11,10 +11,7 @@ type Session struct {
 	url             string
 	conn            *amqp.Connection
 	notifyConnClose chan *amqp.Error
-	channel         *utils.SyncChannel
-	channelDone     *utils.SyncChannelDone
-	channelReady    *utils.SyncChannelReady
-	notifyChanClose *utils.SyncNotifyChanClose
+	delivery        *utils.SyncDelivery
 }
 
 func NewSession(url string) (session *Session, err error) {
@@ -28,10 +25,7 @@ func NewSession(url string) (session *Session, err error) {
 	session.notifyConnClose = make(chan *amqp.Error)
 	conn.NotifyClose(session.notifyConnClose)
 	go session.listenConn()
-	session.channel = utils.NewSyncChannel()
-	session.channelDone = utils.NewSyncChannelDone()
-	session.channelReady = utils.NewSyncChannelReady()
-	session.notifyChanClose = utils.NewSyncNotifyChanClose()
+	session.delivery = utils.NewSyncDelivery()
 	return
 }
 
@@ -59,46 +53,6 @@ func (c *Session) reconnected() {
 		conn.NotifyClose(c.notifyConnClose)
 		go c.listenConn()
 		logrus.Info("Attempt to reconnect successfully")
-		break
-	}
-}
-
-func (c *Session) SetChannel(ID string) (err error) {
-	var channel *amqp.Channel
-	channel, err = c.conn.Channel()
-	if err != nil {
-		return
-	}
-	c.channel.Set(ID, channel)
-	c.channelDone.Set(ID, make(chan int))
-	notifyChanClose := make(chan *amqp.Error)
-	channel.NotifyClose(notifyChanClose)
-	c.notifyChanClose.Set(ID, notifyChanClose)
-	go c.listenChannel(ID)
-	return
-}
-
-func (c *Session) listenChannel(ID string) {
-	select {
-	case <-c.notifyChanClose.Get(ID):
-		logrus.Error("Channel connection is disconnected:", ID)
-		if c.channelReady.Get(ID) {
-			c.refreshChannel(ID)
-		} else {
-			break
-		}
-	case <-c.channelDone.Get(ID):
-		break
-	}
-}
-
-func (c *Session) refreshChannel(ID string) {
-	for {
-		err := c.SetChannel(ID)
-		if err != nil {
-			continue
-		}
-		logrus.Info("Channel refresh successfully")
 		break
 	}
 }
