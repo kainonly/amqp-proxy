@@ -2,6 +2,7 @@ package session
 
 import (
 	"amqp-proxy/app/types"
+	"errors"
 	"github.com/google/uuid"
 	"github.com/streadway/amqp"
 )
@@ -14,8 +15,13 @@ func (c *Session) Get(queue string) (receipt string, body []byte, err error) {
 	}
 	notifyClose := make(chan *amqp.Error)
 	channel.NotifyClose(notifyClose)
-	msg, _, err := channel.Get(queue, false)
+	msg, ok, err := channel.Get(queue, false)
 	if err != nil {
+		return
+	}
+	if ok == false {
+		err = errors.New("available queue does not exist")
+		channel.Close()
 		return
 	}
 	receipt = uuid.New().String()
