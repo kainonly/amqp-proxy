@@ -1,15 +1,18 @@
 package controller
 
 import (
+	"amqp-proxy/app/session"
 	pb "amqp-proxy/router"
 )
 
 type controller struct {
 	pb.UnimplementedRouterServer
+	session *session.Session
 }
 
-func New() *controller {
+func New(session *session.Session) *controller {
 	c := new(controller)
+	c.session = session
 	return c
 }
 

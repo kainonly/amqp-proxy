@@ -20,8 +20,12 @@ message Response {
 }
 
 message PublishParameter{
-  string topic = 1;
-  bytes body = 2;
+  string exchange = 1;
+  string key = 2;
+  bool mandatory = 3;
+  bool immediate = 4;
+  string contentType = 5;
+  bytes body = 6;
 }
 
 message GetParameter {
