@@ -2,6 +2,7 @@ package app
 
 import (
 	"amqp-proxy/app/controller"
+	"amqp-proxy/app/session"
 	"amqp-proxy/app/types"
 	pb "amqp-proxy/router"
 	"google.golang.org/grpc"
@@ -23,9 +24,13 @@ func Application(option *types.Config) (err error) {
 		return
 	}
 	server := grpc.NewServer()
+	ns, err := session.NewSession(option.Amqp)
+	if err != nil {
+		return
+	}
 	pb.RegisterRouterServer(
 		server,
-		controller.New(),
+		controller.New(ns),
 	)
 	server.Serve(listen)
 	return
