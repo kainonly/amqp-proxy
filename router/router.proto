@@ -1,0 +1,50 @@
+syntax = "proto3";
+package amqp.proxy;
+service Router {
+  rpc Publish (PublishParameter) returns (Response){
+  }
+
+  rpc Get (GetParameter) returns (GetResponse) {
+  }
+
+  rpc Ack (AckParameter) returns (Response) {
+  }
+
+  rpc Nack (NackParameter) returns (Response){
+  }
+}
+
+message Response {
+  uint32 error = 1;
+  string msg = 2;
+}
+
+message PublishParameter{
+  string topic = 1;
+  bytes body = 2;
+}
+
+message GetParameter {
+  string queue = 1;
+}
+
+message GetResponse {
+  uint32 error = 1;
+  string msg = 2;
+  Data data = 3;
+}
+
+message Data {
+  string receipt = 1;
+  bytes body = 2;
+}
+
+message AckParameter {
+  string queue = 1;
+  string receipt = 2;
+}
+
+message NackParameter {
+  string queue = 1;
+  string receipt = 2;
+}
