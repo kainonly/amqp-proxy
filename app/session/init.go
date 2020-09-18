@@ -1,6 +1,7 @@
 package session
 
 import (
+	"amqp-proxy/app/logging"
 	"amqp-proxy/app/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
@@ -12,9 +13,10 @@ type Session struct {
 	conn            *amqp.Connection
 	notifyConnClose chan *amqp.Error
 	receipt         *utils.SyncReceipt
+	logging         *logging.Logging
 }
 
-func NewSession(url string) (session *Session, err error) {
+func NewSession(url string, logging *logging.Logging) (session *Session, err error) {
 	session = new(Session)
 	session.url = url
 	conn, err := amqp.Dial(url)
@@ -26,6 +28,7 @@ func NewSession(url string) (session *Session, err error) {
 	conn.NotifyClose(session.notifyConnClose)
 	go session.listenConn()
 	session.receipt = utils.NewSyncReceipt()
+	session.logging = logging
 	return
 }
 
