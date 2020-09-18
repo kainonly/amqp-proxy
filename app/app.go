@@ -2,6 +2,7 @@ package app
 
 import (
 	"amqp-proxy/app/controller"
+	"amqp-proxy/app/logging"
 	"amqp-proxy/app/session"
 	"amqp-proxy/app/types"
 	pb "amqp-proxy/router"
@@ -24,7 +25,8 @@ func Application(option *types.Config) (err error) {
 		return
 	}
 	server := grpc.NewServer()
-	ns, err := session.NewSession(option.Amqp)
+	logger := logging.NewLogging(option.Transfer)
+	ns, err := session.NewSession(option.Amqp, logger)
 	if err != nil {
 		return
 	}
