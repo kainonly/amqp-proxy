@@ -21,6 +21,7 @@ func (c *Session) Get(queue string) (receipt string, body []byte, err error) {
 	receipt = uuid.New().String()
 	c.receipt.Set(receipt, &types.ReceiptOption{
 		Queue:    queue,
+		Channel:  channel,
 		Delivery: &msg,
 	})
 	body = msg.Body
