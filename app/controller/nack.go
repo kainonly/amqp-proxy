@@ -6,5 +6,9 @@ import (
 )
 
 func (c *controller) Nack(ctx context.Context, param *pb.NackParameter) (*pb.Response, error) {
-	return nil, nil
+	err := c.session.Nack(param.Queue, param.Receipt)
+	if err != nil {
+		return c.response(err)
+	}
+	return c.response(nil)
 }
