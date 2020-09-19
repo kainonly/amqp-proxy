@@ -2,3 +2,8 @@ debug: true
 listen: 127.0.0.1:6000
 amqp: amqp://guest:guest@localhost:5672/
 transfer:
+  listen:
+  pipe:
+    publish_id:
+    ack_id:
+    nack_id:

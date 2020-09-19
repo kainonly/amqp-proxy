@@ -25,8 +25,8 @@ func Application(option *types.Config) (err error) {
 		return
 	}
 	server := grpc.NewServer()
-	logger := logging.NewLogging(option.Transfer)
-	ns, err := session.NewSession(option.Amqp, logger)
+	logger := logging.NewLogging(option.Transfer.Listen)
+	ns, err := session.NewSession(option.Amqp, logger, &option.Transfer.Pipe)
 	if err != nil {
 		return
 	}
