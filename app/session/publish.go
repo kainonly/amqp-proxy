@@ -2,9 +2,7 @@ package session
 
 import (
 	"amqp-proxy/app/types"
-	jsoniter "github.com/json-iterator/go"
 	"github.com/streadway/amqp"
-	"github.com/xeipuuv/gojsonschema"
 	"time"
 )
 
@@ -25,44 +23,14 @@ func (c *Session) Publish(option *types.PublishOption) (err error) {
 			Body:        option.Body,
 		},
 	)
-	var message map[string]interface{}
 	if err != nil {
-		message = map[string]interface{}{
-			"Topic": option.Exchange,
-			"Key":   option.Key,
-			"Message": map[string]string{
-				"errs": err.Error(),
-			},
-			"Status": false,
-			"Time":   time.Now().Unix(),
-		}
-	} else {
-		var body interface{}
-		result, err := gojsonschema.Validate(
-			gojsonschema.NewBytesLoader([]byte(`{"type":"object"}`)),
-			gojsonschema.NewBytesLoader(option.Body),
-		)
-		if err != nil {
-			body = map[string]interface{}{
-				"raw": string(option.Body),
-			}
-		} else {
-			if result.Valid() {
-				jsoniter.Unmarshal(option.Body, &body)
-			} else {
-				body = map[string]interface{}{
-					"raw": string(option.Body),
-				}
-			}
-		}
-		message = map[string]interface{}{
-			"Topic":   option.Exchange,
-			"Key":     option.Key,
-			"Message": body,
-			"Status":  true,
-			"Time":    time.Now().Unix(),
-		}
+		return
 	}
-	c.logging.Push(c.pipe.PublishID, message)
+	c.logging.Push(c.pipe.Publish, map[string]interface{}{
+		"Topic":   option.Exchange,
+		"Key":     option.Key,
+		"Payload": string(option.Body),
+		"Time":    time.Now().Unix(),
+	})
 	return
 }
