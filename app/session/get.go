@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"github.com/streadway/amqp"
+	"time"
 )
 
 func (c *Session) Get(queue string) (receipt string, body []byte, err error) {
@@ -38,5 +39,12 @@ func (c *Session) Get(queue string) (receipt string, body []byte, err error) {
 			break
 		}
 	}()
+	c.logging.Push(c.pipe.Message, map[string]interface{}{
+		"Queue":   queue,
+		"Receipt": receipt,
+		"Payload": string(body),
+		"Action":  "Get",
+		"Time":    time.Now().Unix(),
+	})
 	return
 }

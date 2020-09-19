@@ -1,6 +1,9 @@
 package session
 
-import "errors"
+import (
+	"errors"
+	"time"
+)
 
 func (c *Session) Ack(queue string, receipt string) (err error) {
 	receiptOption := c.receipt.Get(receipt)
@@ -15,5 +18,12 @@ func (c *Session) Ack(queue string, receipt string) (err error) {
 		return
 	}
 	receiptOption.Channel.Close()
+	c.logging.Push(c.pipe.Message, map[string]interface{}{
+		"Queue":   queue,
+		"Receipt": receipt,
+		"Payload": nil,
+		"Action":  "Ack",
+		"Time":    time.Now().Unix(),
+	})
 	return
 }

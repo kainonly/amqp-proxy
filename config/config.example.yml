@@ -2,8 +2,7 @@ debug: true
 listen: 127.0.0.1:6000
 amqp: amqp://guest:guest@localhost:5672/
 transfer:
-  listen:
+  listen: 127.0.0.1:6001
   pipe:
-    publish_id:
-    ack_id:
-    nack_id:
+    publish: mq-publish
+    message: mq-message
