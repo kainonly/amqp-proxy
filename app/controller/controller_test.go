@@ -40,7 +40,7 @@ func TestMain(m *testing.M) {
 
 func TestController_Publish(t *testing.T) {
 	response, err := client.Publish(context.Background(), &pb.PublishParameter{
-		Exchange:    "test",
+		Exchange:    "proxy",
 		Key:         "",
 		Mandatory:   false,
 		Immediate:   false,
@@ -56,7 +56,7 @@ func TestController_Publish(t *testing.T) {
 		t.Log(response.Msg)
 	}
 	response, err = client.Publish(context.Background(), &pb.PublishParameter{
-		Exchange:    "test",
+		Exchange:    "proxy",
 		Key:         "",
 		Mandatory:   false,
 		Immediate:   false,
@@ -78,7 +78,7 @@ var receipt2 string
 
 func TestController_Get(t *testing.T) {
 	response, err := client.Get(context.Background(), &pb.GetParameter{
-		Queue: "test",
+		Queue: "proxy",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -90,7 +90,7 @@ func TestController_Get(t *testing.T) {
 		receipt1 = response.Data.Receipt
 	}
 	response, err = client.Get(context.Background(), &pb.GetParameter{
-		Queue: "test",
+		Queue: "proxy",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -105,7 +105,7 @@ func TestController_Get(t *testing.T) {
 
 func TestController_Ack(t *testing.T) {
 	response, err := client.Ack(context.Background(), &pb.AckParameter{
-		Queue:   "test",
+		Queue:   "proxy",
 		Receipt: receipt1,
 	})
 	if err != nil {
@@ -120,7 +120,7 @@ func TestController_Ack(t *testing.T) {
 
 func TestController_Nack(t *testing.T) {
 	response, err := client.Nack(context.Background(), &pb.NackParameter{
-		Queue:   "test",
+		Queue:   "proxy",
 		Receipt: receipt2,
 	})
 	if err != nil {
@@ -136,7 +136,7 @@ func TestController_Nack(t *testing.T) {
 func BenchmarkController(b *testing.B) {
 	for i := 0; i < 1000; i++ {
 		response, err := client.Publish(context.Background(), &pb.PublishParameter{
-			Exchange:    "test",
+			Exchange:    "proxy",
 			Key:         "",
 			Mandatory:   false,
 			Immediate:   false,
@@ -155,7 +155,7 @@ func BenchmarkController(b *testing.B) {
 func BenchmarkController_GetAndAck(b *testing.B) {
 	for i := 0; i < 1000; i++ {
 		response1, err := client.Get(context.Background(), &pb.GetParameter{
-			Queue: "test",
+			Queue: "proxy",
 		})
 		if err != nil {
 			b.Fatal(err)
@@ -164,7 +164,7 @@ func BenchmarkController_GetAndAck(b *testing.B) {
 			b.Error(response1.Msg)
 		}
 		response2, err := client.Ack(context.Background(), &pb.AckParameter{
-			Queue:   "test",
+			Queue:   "proxy",
 			Receipt: response1.Data.Receipt,
 		})
 		if err != nil {
@@ -182,7 +182,7 @@ func BenchmarkController_Mock(b *testing.B) {
 	go func() {
 		for i := 0; i < 5000; i++ {
 			response, err := client.Publish(context.Background(), &pb.PublishParameter{
-				Exchange:    "test",
+				Exchange:    "proxy",
 				Key:         "",
 				Mandatory:   false,
 				Immediate:   false,
@@ -204,7 +204,7 @@ func BenchmarkController_Mock(b *testing.B) {
 	go func() {
 		for i := 0; i < 5000; i++ {
 			response1, err := client.Get(context.Background(), &pb.GetParameter{
-				Queue: "test",
+				Queue: "proxy",
 			})
 			if err != nil {
 				b.Fatal(err)
@@ -216,7 +216,7 @@ func BenchmarkController_Mock(b *testing.B) {
 			}
 			if i%2 == 0 {
 				response2, err := client.Ack(context.Background(), &pb.AckParameter{
-					Queue:   "test",
+					Queue:   "proxy",
 					Receipt: response1.Data.Receipt,
 				})
 				if err != nil {
@@ -229,7 +229,7 @@ func BenchmarkController_Mock(b *testing.B) {
 				}
 			} else {
 				response2, err := client.Nack(context.Background(), &pb.NackParameter{
-					Queue:   "test",
+					Queue:   "proxy",
 					Receipt: response1.Data.Receipt,
 				})
 				if err != nil {
