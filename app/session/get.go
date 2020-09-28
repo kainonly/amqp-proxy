@@ -5,24 +5,26 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"github.com/streadway/amqp"
-	"time"
 )
 
 func (c *Session) Get(queue string) (receipt string, body []byte, err error) {
 	var channel *amqp.Channel
 	channel, err = c.conn.Channel()
 	if err != nil {
+		go c.collectFromAction(queue, nil, nil, "Get", err)
 		return
 	}
 	notifyClose := make(chan *amqp.Error)
 	channel.NotifyClose(notifyClose)
 	msg, ok, err := channel.Get(queue, false)
 	if err != nil {
+		go c.collectFromAction(queue, nil, nil, "Get", err)
 		return
 	}
 	if ok == false {
 		err = errors.New("available queue does not exist")
 		channel.Close()
+		go c.collectFromAction(queue, nil, nil, "Get", err)
 		return
 	}
 	receipt = uuid.New().String()
@@ -39,12 +41,6 @@ func (c *Session) Get(queue string) (receipt string, body []byte, err error) {
 			break
 		}
 	}()
-	c.logging.Push(c.pipe.Message, map[string]interface{}{
-		"Queue":   queue,
-		"Receipt": receipt,
-		"Payload": string(body),
-		"Action":  "Get",
-		"Time":    time.Now().Unix(),
-	})
+	go c.collectFromAction(queue, receipt, string(body), "Get", nil)
 	return
 }

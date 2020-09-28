@@ -2,28 +2,26 @@ package session
 
 import (
 	"errors"
-	"time"
 )
 
 func (c *Session) Ack(queue string, receipt string) (err error) {
 	receiptOption := c.receipt.Get(receipt)
 	if receiptOption == nil {
-		return errors.New("the receipt has expired")
+		err = errors.New("the receipt has expired")
+		go c.collectFromAction(queue, receipt, nil, "Ack", err)
+		return
 	}
 	if receiptOption.Queue != queue {
-		return errors.New("the receipt verification is incorrect")
+		err = errors.New("the receipt verification is incorrect")
+		go c.collectFromAction(queue, receipt, nil, "Ack", err)
+		return
 	}
 	err = receiptOption.Delivery.Ack(false)
 	if err != nil {
+		go c.collectFromAction(queue, receipt, nil, "Ack", err)
 		return
 	}
 	receiptOption.Channel.Close()
-	c.logging.Push(c.pipe.Message, map[string]interface{}{
-		"Queue":   queue,
-		"Receipt": receipt,
-		"Payload": nil,
-		"Action":  "Ack",
-		"Time":    time.Now().Unix(),
-	})
+	go c.collectFromAction(queue, receipt, nil, "Ack", nil)
 	return
 }

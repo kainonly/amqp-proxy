@@ -3,13 +3,13 @@ package session
 import (
 	"amqp-proxy/app/types"
 	"github.com/streadway/amqp"
-	"time"
 )
 
 func (c *Session) Publish(option *types.PublishOption) (err error) {
 	var channel *amqp.Channel
 	channel, err = c.conn.Channel()
 	if err != nil {
+		go c.collectFromPublish(option, err)
 		return
 	}
 	defer channel.Close()
@@ -24,13 +24,9 @@ func (c *Session) Publish(option *types.PublishOption) (err error) {
 		},
 	)
 	if err != nil {
+		go c.collectFromPublish(option, err)
 		return
 	}
-	c.logging.Push(c.pipe.Publish, map[string]interface{}{
-		"Topic":   option.Exchange,
-		"Key":     option.Key,
-		"Payload": string(option.Body),
-		"Time":    time.Now().Unix(),
-	})
+	go c.collectFromPublish(option, nil)
 	return
 }

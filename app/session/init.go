@@ -62,3 +62,32 @@ func (c *Session) reconnected() {
 		break
 	}
 }
+
+func (c *Session) collectFromPublish(option *types.PublishOption, err error) {
+	var notice string
+	if err != nil {
+		notice = err.Error()
+	}
+	c.logging.Push(c.pipe.Publish, map[string]interface{}{
+		"Topic":   option.Exchange,
+		"Key":     option.Key,
+		"Payload": string(option.Body),
+		"Notice":  notice,
+		"Time":    time.Now().Unix(),
+	})
+}
+
+func (c *Session) collectFromAction(queue string, receipt interface{}, payload interface{}, action string, err error) {
+	var notice string
+	if err != nil {
+		notice = err.Error()
+	}
+	c.logging.Push(c.pipe.Publish, map[string]interface{}{
+		"Queue":   queue,
+		"Receipt": receipt,
+		"Payload": payload,
+		"Notice":  notice,
+		"Action":  action,
+		"Time":    time.Now().Unix(),
+	})
+}
