@@ -82,7 +82,7 @@ func (c *Session) collectFromAction(queue string, receipt interface{}, payload i
 	if err != nil {
 		notice = err.Error()
 	}
-	c.logging.Push(c.pipe.Publish, map[string]interface{}{
+	c.logging.Push(c.pipe.Message, map[string]interface{}{
 		"Queue":   queue,
 		"Receipt": receipt,
 		"Payload": payload,
