@@ -134,7 +134,7 @@ func TestController_Nack(t *testing.T) {
 }
 
 func BenchmarkController(b *testing.B) {
-	for i := 0; i < 100000; i++ {
+	for i := 0; i < 1000; i++ {
 		response, err := client.Publish(context.Background(), &pb.PublishParameter{
 			Exchange:    "tests",
 			Key:         "",
@@ -153,7 +153,7 @@ func BenchmarkController(b *testing.B) {
 }
 
 func BenchmarkController_GetAndAck(b *testing.B) {
-	for i := 0; i < 100000; i++ {
+	for i := 0; i < 1000; i++ {
 		response1, err := client.Get(context.Background(), &pb.GetParameter{
 			Queue: "tests",
 		})
@@ -180,7 +180,7 @@ func BenchmarkController_Mock(b *testing.B) {
 	var wg sync.WaitGroup
 	wg.Add(2)
 	go func() {
-		for i := 0; i < 100000; i++ {
+		for i := 0; i < 1000; i++ {
 			response, err := client.Publish(context.Background(), &pb.PublishParameter{
 				Exchange:    "tests",
 				Key:         "",
@@ -202,7 +202,7 @@ func BenchmarkController_Mock(b *testing.B) {
 	}()
 	time.Sleep(time.Second)
 	go func() {
-		for i := 0; i < 100000; i++ {
+		for i := 0; i < 1000; i++ {
 			response1, err := client.Get(context.Background(), &pb.GetParameter{
 				Queue: "tests",
 			})

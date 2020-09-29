@@ -9,7 +9,7 @@ func (c *Session) Publish(option *types.PublishOption) (err error) {
 	var channel *amqp.Channel
 	channel, err = c.conn.Channel()
 	if err != nil {
-		go c.collectFromPublish(option, err)
+		c.collectFromPublish(option, err)
 		return
 	}
 	defer channel.Close()
@@ -24,9 +24,9 @@ func (c *Session) Publish(option *types.PublishOption) (err error) {
 		},
 	)
 	if err != nil {
-		go c.collectFromPublish(option, err)
+		c.collectFromPublish(option, err)
 		return
 	}
-	go c.collectFromPublish(option, nil)
+	c.collectFromPublish(option, nil)
 	return
 }
