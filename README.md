@@ -1,4 +1,4 @@
-# amqp-proxy
+# AMQP Proxy
 
 Use grpc proxy to call AMQP operations
 
@@ -28,7 +28,7 @@ services:
 
 For configuration, please refer to `config/config.example.yml`
 
-- **debug** `bool` Start debugging, ie `net/http/pprof`, access address is`http://localhost:6060`
+- **debug** `string` Start debugging, ie `net/http/pprof`, access address is`http://localhost:6060`
 - **listen** `string` Microservice listening address
 - **amqp** `string` E.g `amqp://guest:guest@localhost:5672/`
 - **transfer** `object` [elastic-transfer](https://github.com/codexset/elastic-transfer) service
