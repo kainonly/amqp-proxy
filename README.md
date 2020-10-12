@@ -2,11 +2,11 @@
 
 Use grpc proxy to call AMQP operations
 
-[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/codexset/amqp-proxy?style=flat-square)](https://github.com/codexset/amqp-proxy)
-[![Github Actions](https://img.shields.io/github/workflow/status/codexset/amqp-proxy/release?style=flat-square)](https://github.com/codexset/amqp-proxy/actions)
+[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/kainonly/amqp-proxy?style=flat-square)](https://github.com/kainonly/amqp-proxy)
+[![Github Actions](https://img.shields.io/github/workflow/status/kainonly/amqp-proxy/release?style=flat-square)](https://github.com/kainonly/amqp-proxy/actions)
 [![Image Size](https://img.shields.io/docker/image-size/kainonly/amqp-proxy?style=flat-square)](https://hub.docker.com/r/kainonly/amqp-proxy)
 [![Docker Pulls](https://img.shields.io/docker/pulls/kainonly/amqp-proxy.svg?style=flat-square)](https://hub.docker.com/r/kainonly/amqp-proxy)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://raw.githubusercontent.com/codexset/amqp-proxy/master/LICENSE)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://raw.githubusercontent.com/kainonly/amqp-proxy/master/LICENSE)
 
 ## Setup
 
@@ -31,7 +31,7 @@ For configuration, please refer to `config/config.example.yml`
 - **debug** `string` Start debugging, ie `net/http/pprof`, access address is`http://localhost:6060`
 - **listen** `string` Microservice listening address
 - **amqp** `string` E.g `amqp://guest:guest@localhost:5672/`
-- **transfer** `object` [elastic-transfer](https://github.com/codexset/elastic-transfer) service
+- **transfer** `object` [elastic-transfer](https://github.com/kainonly/elastic-transfer) service
   - **listen** `string` host
   - **pipe** `object`
     - **publish** `string` for `publish`
