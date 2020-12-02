@@ -2,11 +2,11 @@
 
 Use grpc proxy to call AMQP operations
 
-[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/kainonly/amqp-proxy?style=flat-square)](https://github.com/kainonly/amqp-proxy)
-[![Github Actions](https://img.shields.io/github/workflow/status/kainonly/amqp-proxy/release?style=flat-square)](https://github.com/kainonly/amqp-proxy/actions)
+[![Github Actions](https://img.shields.io/github/workflow/status/kain-lab/amqp-proxy/release?style=flat-square)](https://github.com/kain-lab/amqp-proxy/actions)
+[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/kain-lab/amqp-proxy?style=flat-square)](https://github.com/kain-lab/amqp-proxy)
 [![Image Size](https://img.shields.io/docker/image-size/kainonly/amqp-proxy?style=flat-square)](https://hub.docker.com/r/kainonly/amqp-proxy)
 [![Docker Pulls](https://img.shields.io/docker/pulls/kainonly/amqp-proxy.svg?style=flat-square)](https://hub.docker.com/r/kainonly/amqp-proxy)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://raw.githubusercontent.com/kainonly/amqp-proxy/master/LICENSE)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://raw.githubusercontent.com/kain-lab/amqp-proxy/master/LICENSE)
 
 ## Setup
 
@@ -22,6 +22,7 @@ services:
       - ./amqp-proxy:/app/config
     ports:
       - 6000:6000
+      - 8080:8080
 ```
 
 ## Configuration
@@ -29,9 +30,10 @@ services:
 For configuration, please refer to `config/config.example.yml`
 
 - **debug** `string` Start debugging, ie `net/http/pprof`, access address is`http://localhost:6060`
-- **listen** `string` Microservice listening address
+- **listen** `string` grpc server listening address
+- **gateway** `string` API gateway server listening address
 - **amqp** `string` E.g `amqp://guest:guest@localhost:5672/`
-- **transfer** `object` [elastic-transfer](https://github.com/kainonly/elastic-transfer) service
+- **transfer** `object` [elastic-transfer](https://github.com/kain-lab/elastic-transfer) service
   - **listen** `string` host
   - **pipe** `object`
     - **publish** `string` for `publish`
@@ -39,31 +41,42 @@ For configuration, please refer to `config/config.example.yml`
 
 ## Service
 
-The service is based on gRPC and you can view `router/router.proto`
+The service is based on gRPC to view `api/api.proto`
 
 ```proto
 syntax = "proto3";
 package amqp.proxy;
-service Router {
-  rpc Publish (PublishParameter) returns (Response){
-  }
+option go_package = "amqp-proxy/gen/go/amqp/proxy";
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
 
-  rpc Get (GetParameter) returns (GetResponse) {
+service API {
+  rpc Publish (Option) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/publish",
+      body: "*"
+    };
   }
-
-  rpc Ack (AckParameter) returns (Response) {
+  rpc Get (Queue) returns (Content) {
+    option (google.api.http) = {
+      get: "/get",
+    };
   }
-
-  rpc Nack (NackParameter) returns (Response){
+  rpc Ack (Receipt) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/ack",
+      body: "*"
+    };
+  }
+  rpc Nack (Receipt) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/nack",
+      body: "*"
+    };
   }
 }
 
-message Response {
-  uint32 error = 1;
-  string msg = 2;
-}
-
-message PublishParameter{
+message Option {
   string exchange = 1;
   string key = 2;
   bool mandatory = 3;
@@ -72,101 +85,156 @@ message PublishParameter{
   bytes body = 6;
 }
 
-message GetParameter {
+message Queue {
   string queue = 1;
 }
 
-message GetResponse {
-  uint32 error = 1;
-  string msg = 2;
-  Data data = 3;
-}
-
-message Data {
+message Content {
   string receipt = 1;
   bytes body = 2;
 }
 
-message AckParameter {
-  string queue = 1;
-  string receipt = 2;
-}
-
-message NackParameter {
+message Receipt {
   string queue = 1;
   string receipt = 2;
 }
 ```
 
-## rpc Publish (PublishParameter) returns (Response) {}
+## Publish (Option) returns (google.protobuf.Empty)
 
-- PublishParameter
+Publish messages to the exchange
+
+### RPC
+
+- **Option**
   - **exchange** `string` exchange name
   - **key** `string` routing key
   - **mandatory** `bool`
   - **immediate** `bool`
   - **contentType** `string` text/plain or application/json 
   - **body** `bytes` publish payload
-- Response
-  - **error** `uint32` error code, `0` is normal
-  - **msg** `string` error feedback
 
 ```golang
-client.Publish(context.Background(), &pb.PublishParameter{
-    Exchange:    "proxy",
-    Key:         "",
-    Mandatory:   false,
-    Immediate:   false,
-    ContentType: "application/json",
-    Body:        []byte(`{"name":"kain"}`),
+client := pb.NewAPIClient(conn)
+_, err := client.Publish(context.Background(), &pb.Option{
+  Exchange:    "proxy.debug",
+  Key:         "",
+  Mandatory:   false,
+  Immediate:   false,
+  ContentType: "application/json",
+  Body:        []byte(`{"name":"kain"}`),
 })
 ```
 
-## rpc Get (GetParameter) returns (GetResponse) {}
+### API Gateway
 
-- GetParameter
+- **POST** `/publish`
+
+```http
+POST /publish HTTP/1.1
+Host: localhost:8080
+Content-Type: application/json
+
+{
+    "exchange": "proxy.debug",
+    "key": "",
+    "mandatory": false,
+    "immediate": false,
+    "content_type": "application/json",
+    "body": "eyJuYW1lIjoiYXBpIn0="
+}
+```
+
+## Get (Queue) returns (Content)
+
+Get messages from the queue
+
+### RPC
+
+- **Queue**
   - **queue** `string` queue name
-- GetResponse
-  - **error** `uint32` error code, `0` is normal
-  - **msg** `string` error feedback
-  - **data** `Data`
-    - **receipt** `string` consumption receipt
-    - **body** `bytes` get payload
+- **Content**
+  - **receipt** `string` consumption receipt
+  - **body** `bytes` get payload
 
 ```golang
-client.Get(context.Background(), &pb.GetParameter{
-    Queue: "proxy",
+client := pb.NewAPIClient(conn)
+response, err := client.Get(context.Background(), &pb.Queue{
+  Queue: "proxy.debug",
 })
 ```
 
-## rpc Ack (AckParameter) returns (Response) {}
+### API Gateway
 
-- AckParameter
+- **GET** `/get`
+
+```http
+GET /get?queue=proxy.debug HTTP/1.1
+Host: localhost:8080
+```
+
+## Ack (Receipt) returns (google.protobuf.Empty)
+
+Message acknowledgment
+
+### RPC
+
+- **Receipt**
   - **queue** `string` queue name
   - **receipt** `string` consumption receipt
-- Response
-  - **error** `uint32` error code, `0` is normal
-  - **msg** `string` error feedback
 
 ```golang
-client.Ack(context.Background(), &pb.AckParameter{
-    Queue:   "proxy",
-    Receipt: receipt,
+client := pb.NewAPIClient(conn)
+_, err := client.Ack(context.Background(), &pb.Receipt{
+  Queue:   "proxy.debug",
+  Receipt: receipt,
 })
 ```
 
-## rpc Nack (NackParameter) returns (Response) {}
+### API Gateway
 
-- NackParameter
+- **POST** `/ack`
+
+```http
+POST /ack HTTP/1.1
+Host: localhost:8080
+Content-Type: application/json
+
+{
+    "queue": "proxy.debug",
+    "receipt": "456a55fd-dc0f-4073-82ba-74c9c16c4961"
+}
+```
+
+## Nack (Receipt) returns (google.protobuf.Empty)
+
+Message unacknowledged
+
+### RPC
+
+- **Receipt**
   - **queue** `string` queue name
   - **receipt** `string` consumption receipt
-- Response
-  - **error** `uint32` error code, `0` is normal
-  - **msg** `string` error feedback
 
 ```golang
-client.Nack(context.Background(), &pb.NackParameter{
-    Queue:   "proxy",
-    Receipt: receipt,
+client := pb.NewAPIClient(conn)
+_, err = client.Nack(context.Background(), &pb.Receipt{
+  Queue:   "proxy.debug",
+  Receipt: receipt,
 })
+```
+
+### API Gateway
+
+- **POST** `/nack`
+
+```http
+POST /nack HTTP/1.1
+Host: localhost:8080
+Content-Type: application/json
+
+{
+    "queue": "proxy.debug",
+    "receipt": "063207ab-603a-4f1c-acda-97ffe089fb52"
+}
 ```
