@@ -13,6 +13,7 @@ import (
 
 var (
 	QueueNotExists    = errors.New("available queue does not exist")
+	QueueIsEmpty      = errors.New("the queue message is empty")
 	ReceiptHasExpired = errors.New("the receipt has expired")
 	ReceiptIncorrect  = errors.New("the receipt verification is incorrect")
 )
