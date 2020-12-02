@@ -7,6 +7,10 @@ import (
 )
 
 func (c *Session) Get(queue string) (receipt string, body []byte, err error) {
+	if queue == "" {
+		err = QueueNotExists
+		return
+	}
 	var channel *amqp.Channel
 	if channel, err = c.conn.Channel(); err != nil {
 		return

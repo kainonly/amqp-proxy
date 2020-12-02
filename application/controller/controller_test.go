@@ -30,7 +30,7 @@ func TestMain(m *testing.M) {
 
 func TestController_Publish(t *testing.T) {
 	_, err := client.Publish(context.Background(), &pb.Option{
-		Exchange:    "debug.proxy",
+		Exchange:    "proxy.debug",
 		Key:         "",
 		Mandatory:   false,
 		Immediate:   false,
@@ -46,7 +46,7 @@ var receipt string
 
 func TestController_Get(t *testing.T) {
 	response, err := client.Get(context.Background(), &pb.Queue{
-		Queue: "debug.proxy",
+		Queue: "proxy.debug",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -57,7 +57,7 @@ func TestController_Get(t *testing.T) {
 
 func TestController_Ack(t *testing.T) {
 	_, err := client.Ack(context.Background(), &pb.Receipt{
-		Queue:   "debug.proxy",
+		Queue:   "proxy.debug",
 		Receipt: receipt,
 	})
 	if err != nil {
@@ -67,7 +67,7 @@ func TestController_Ack(t *testing.T) {
 
 func TestController_Nack(t *testing.T) {
 	_, err := client.Publish(context.Background(), &pb.Option{
-		Exchange:    "debug.proxy",
+		Exchange:    "proxy.debug",
 		Key:         "",
 		Mandatory:   false,
 		Immediate:   false,
@@ -79,7 +79,7 @@ func TestController_Nack(t *testing.T) {
 	}
 	// Get Message
 	response, err := client.Get(context.Background(), &pb.Queue{
-		Queue: "debug.proxy",
+		Queue: "proxy.debug",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -88,7 +88,7 @@ func TestController_Nack(t *testing.T) {
 	receipt = response.Receipt
 	// Nack
 	_, err = client.Nack(context.Background(), &pb.Receipt{
-		Queue:   "debug.proxy",
+		Queue:   "proxy.debug",
 		Receipt: receipt,
 	})
 	if err != nil {
