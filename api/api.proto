@@ -1,0 +1,54 @@
+syntax = "proto3";
+package amqp.proxy;
+option go_package = "amqp-proxy/gen/go/amqp/proxy";
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+
+service API {
+  rpc Publish (Option) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/publish",
+      body: "*"
+    };
+  }
+  rpc Get (Queue) returns (Content) {
+    option (google.api.http) = {
+      get: "/get",
+    };
+  }
+  rpc Ack (Receipt) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/ack",
+      body: "*"
+    };
+  }
+  rpc Nack (Receipt) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/nack",
+      body: "*"
+    };
+  }
+}
+
+message Option {
+  string exchange = 1;
+  string key = 2;
+  bool mandatory = 3;
+  bool immediate = 4;
+  string contentType = 5;
+  bytes body = 6;
+}
+
+message Queue {
+  string queue = 1;
+}
+
+message Content {
+  string receipt = 1;
+  bytes body = 2;
+}
+
+message Receipt {
+  string queue = 1;
+  string receipt = 2;
+}
