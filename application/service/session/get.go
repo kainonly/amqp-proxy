@@ -15,11 +15,22 @@ func (c *Session) Get(queue string) (receipt string, body []byte, err error) {
 	if channel, err = c.conn.Channel(); err != nil {
 		return
 	}
+	var q amqp.Queue
+	if q, err = channel.QueueInspect(queue); err != nil {
+		channel.Close()
+		return
+	}
+	if q.Messages == 0 {
+		channel.Close()
+		err = QueueIsEmpty
+		return
+	}
 	notifyClose := make(chan *amqp.Error)
 	channel.NotifyClose(notifyClose)
 	var msg amqp.Delivery
 	var ok bool
 	if msg, ok, err = channel.Get(queue, false); err != nil {
+		channel.Close()
 		go c.logging(Log{
 			Queue:   queue,
 			Receipt: nil,
