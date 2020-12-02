@@ -47,7 +47,7 @@ func InitializeTransfer(cfg *config.Config) (*transfer.Transfer, error) {
 
 // Initialize amqp session management
 func InitializeSession(dep session.Dependency) (*session.Session, error) {
-	return session.NewSession(&dep)
+	return session.New(&dep)
 }
 
 // Set up api gateway for grpc

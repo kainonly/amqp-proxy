@@ -1,0 +1,27 @@
+GET {{url}}/transfers
+
+###
+
+PUT {{url}}/transfer
+Content-Type: application/json
+
+{
+  "id": "mq-publish",
+  "index": "mq-publish-logs-alpha",
+  "validate": "{\"type\":\"object\"}",
+  "topic": "logs.mq-publish",
+  "key": ""
+}
+
+###
+
+PUT {{url}}/transfer
+Content-Type: application/json
+
+{
+  "id": "mq-message",
+  "index": "mq-message-logs-alpha",
+  "validate": "{\"type\":\"object\"}",
+  "topic": "logs.mq-message",
+  "key": ""
+}

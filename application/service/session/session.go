@@ -39,8 +39,9 @@ type Log struct {
 	Action  string
 }
 
-func NewSession(dep *Dependency) (c *Session, err error) {
+func New(dep *Dependency) (c *Session, err error) {
 	c = new(Session)
+	c.Dependency = dep
 	c.url = dep.Config.Amqp
 	if c.conn, err = amqp.Dial(c.url); err != nil {
 		return
@@ -81,10 +82,12 @@ func (c *Session) reconnected() {
 
 func (c *Session) logging(values ...interface{}) error {
 	var msg string
+	var pipe string
 	content := make(map[string]interface{})
 	for _, value := range values {
 		switch l := value.(type) {
 		case PublishOption:
+			pipe = c.Config.Transfer.Pipe.Publish
 			content = map[string]interface{}{
 				"Topic":   l.Exchange,
 				"Key":     l.Key,
@@ -92,6 +95,7 @@ func (c *Session) logging(values ...interface{}) error {
 			}
 			break
 		case Log:
+			pipe = c.Config.Transfer.Pipe.Message
 			content = map[string]interface{}{
 				"Queue":   l.Queue,
 				"Receipt": l.Receipt,
@@ -106,5 +110,8 @@ func (c *Session) logging(values ...interface{}) error {
 	}
 	content["Notice"] = msg
 	content["Time"] = time.Now().Unix()
-	return c.Transfer.Push(c.Config.Transfer.Pipe.Publish, content)
+	if pipe != "" {
+		return c.Transfer.Push(pipe, content)
+	}
+	return nil
 }
