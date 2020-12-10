@@ -35,7 +35,7 @@ func (c *Session) Get(queue string) (receipt string, body []byte, err error) {
 			Queue:   queue,
 			Receipt: nil,
 			Payload: nil,
-			Action:  "GET",
+			Action:  "Get",
 		}, err)
 		return
 	}
@@ -46,7 +46,7 @@ func (c *Session) Get(queue string) (receipt string, body []byte, err error) {
 			Queue:   queue,
 			Receipt: nil,
 			Payload: nil,
-			Action:  "GET",
+			Action:  "Get",
 		}, err)
 		return
 	}
@@ -68,7 +68,7 @@ func (c *Session) Get(queue string) (receipt string, body []byte, err error) {
 		Queue:   queue,
 		Receipt: receipt,
 		Payload: string(body),
-		Action:  "GET",
+		Action:  "Get",
 	})
 	return
 }
